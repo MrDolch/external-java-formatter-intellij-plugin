@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.template
+package com.github.mrdolch.externaljavaformatintellijplugin
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

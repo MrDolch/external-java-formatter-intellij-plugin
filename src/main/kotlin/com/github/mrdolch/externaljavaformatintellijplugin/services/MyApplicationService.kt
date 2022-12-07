@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package com.github.mrdolch.externaljavaformatintellijplugin.services
 
-import org.jetbrains.plugins.template.MyBundle
+import com.github.mrdolch.externaljavaformatintellijplugin.MyBundle
 
 class MyApplicationService {
 
