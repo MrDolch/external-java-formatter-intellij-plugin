@@ -13,9 +13,11 @@
  */
 package com.github.mrdolch.externaljavaformatter
 
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import java.nio.file.Path
 
 @State(name = "ExternalJavaFormatterSettings", storages = [Storage("external-java-formatter.xml")])
 internal class PersistConfigurationService : PersistentStateComponent<PersistConfigurationService.Configuration> {
@@ -26,12 +28,26 @@ internal class PersistConfigurationService : PersistentStateComponent<PersistCon
     }
 
     internal class Configuration {
-        var enabled: Boolean? = null
+        var enabled: Boolean? = false
         var sendContent: Boolean? = null // TODO implement sending content via stdin to formatter
-        var classpath: String? = null
-        var mainClass: String? = null
-        var arguments: String? = null
-        var vmOptions: String? = null
-        var testCode: String? = null
+        var classpath: String? = Path.of(
+            PathManager.getPluginsPath(),
+            "external-java-formatter-intellij-plugin", "lib", "google-java-format-1.15.0.jar"
+        ).toString()
+        var mainClass: String? = com.google.googlejavaformat.java.Main::class.java.name
+        var arguments: String? = "{}"
+        var vmOptions: String? = """
+            --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+            --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
+            --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
+        """.trimIndent()
+        var testCode: String? = ""
     }
 }

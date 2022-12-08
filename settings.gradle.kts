@@ -1,1 +1,1 @@
-rootProject.name = "external-java-format-intellij-plugin"
+rootProject.name = "external-java-formatter-intellij-plugin"
