@@ -29,16 +29,19 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
 
         val params = SimpleJavaParameters()
         params.jdk = getRelevantJdk(formattingRequest.context.project)
-        configuration.mainClass?.let { params.classPath.add(it) }
-        configuration.arguments?.let {
-            it.trim().split("\\s+".toRegex()).forEach { arg ->
-                if (arg != "{}") params.programParametersList.addAll(arg)
+        params.workingDirectory = configuration.workingDir
+        params.mainClass = configuration.mainClass
+        configuration.classPath?.run {
+            trim().split("[:;]+".toRegex()).forEach(params.classPath::add)
+        }
+        configuration.arguments?.run {
+            trim().split("\\s+".toRegex()).forEach { argument ->
+                if (argument != "{}") params.programParametersList.add(argument)
                 else params.programParametersList.add(formattingRequest.ioFile!!.absolutePath)
             }
         }
-        configuration.vmOptions?.let {
-            it.trim().split("\\n+".toRegex())
-                .forEach { vmOption -> params.vmParametersList.addAll(vmOption) }
+        configuration.vmOptions?.run {
+            trim().split("\\n+".toRegex()).forEach(params.vmParametersList::add)
         }
         val handler = OSProcessHandler(params.toCommandLine().withCharset(StandardCharsets.UTF_8))
         return object : FormattingTask {

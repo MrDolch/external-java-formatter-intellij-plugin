@@ -30,12 +30,12 @@ internal class PersistConfigurationService : PersistentStateComponent<PersistCon
     internal class Configuration {
         var enabled: Boolean? = false
         var sendContent: Boolean? = null // TODO implement sending content via stdin to formatter
-        var classpath: String? = Path.of(
-            PathManager.getPluginsPath(),
-            "external-java-formatter-intellij-plugin", "lib", "google-java-format-1.15.0.jar"
-        ).toString()
+        var classPath: String? = "google-java-format-1.15.0-all-deps.jar"
         var mainClass: String? = com.google.googlejavaformat.java.Main::class.java.name
         var arguments: String? = "{}"
+        var workingDir: String? = Path.of(
+            PathManager.getPluginsPath(), "external-java-formatter-intellij-plugin", "lib"
+        ).toString()
         var vmOptions: String? = """
             --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
             --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED

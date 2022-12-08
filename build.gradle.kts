@@ -6,15 +6,10 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     // Java support
     id("java")
-    // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.7.22"
-    // Gradle IntelliJ Plugin
+    kotlin("jvm") version "1.7.22"
     id("org.jetbrains.intellij") version "1.10.0"
-    // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.0.0"
-    // Gradle Qodana Plugin
     id("org.jetbrains.qodana") version "0.1.13"
-    // Gradle Kover Plugin
     id("org.jetbrains.kotlinx.kover") version "0.6.1"
 }
 
@@ -27,14 +22,16 @@ repositories {
 }
 dependencies {
     implementation("com.google.googlejavaformat:google-java-format:1.15.0")
+    runtimeOnly("com.google.googlejavaformat:google-java-format:1.15.0:all-deps")
+    implementation(kotlin("stdlib-jdk8"))
 }
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    jvmTarget = "11"
+    jvmTarget = "1.8"
 }
 val compileTestKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-    jvmTarget = "11"
+    jvmTarget = "1.8"
 }
 
 // Set the JVM language level used to build project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
