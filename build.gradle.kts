@@ -21,7 +21,6 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("com.google.googlejavaformat:google-java-format:1.15.0")
     runtimeOnly(fileTree("$projectDir/src/main/resources/lib"))
     implementation(kotlin("stdlib-jdk8"))
 }

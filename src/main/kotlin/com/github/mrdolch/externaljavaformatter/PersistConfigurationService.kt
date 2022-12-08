@@ -31,7 +31,7 @@ internal class PersistConfigurationService : PersistentStateComponent<PersistCon
         var enabled: Boolean? = false
         var sendContent: Boolean? = null // TODO implement sending content via stdin to formatter
         var classPath: String? = "swiss-google-java-format-1.15.0-all-deps.jar"
-        var mainClass: String? = com.google.googlejavaformat.java.Main::class.java.name
+        var mainClass: String? = "com.google.googlejavaformat.java.Main"
         var arguments: String? = "--swiss {}"
         var workingDir: String? = Path.of(
             PathManager.getPluginsPath(), "external-java-formatter-intellij-plugin", "lib"
