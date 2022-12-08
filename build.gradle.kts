@@ -22,9 +22,10 @@ repositories {
 }
 dependencies {
     implementation("com.google.googlejavaformat:google-java-format:1.15.0")
-    runtimeOnly("com.google.googlejavaformat:google-java-format:1.15.0:all-deps")
+    runtimeOnly(fileTree("$projectDir/src/main/resources/lib"))
     implementation(kotlin("stdlib-jdk8"))
 }
+
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "1.8"
