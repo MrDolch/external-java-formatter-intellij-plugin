@@ -21,22 +21,22 @@ import java.nio.file.Path
 
 @State(name = "ExternalJavaFormatterSettings", storages = [Storage("external-java-formatter.xml")])
 internal class PersistConfigurationService : PersistentStateComponent<PersistConfigurationService.Configuration> {
-    private var configuration = Configuration()
-    override fun getState(): Configuration = configuration
-    override fun loadState(configuration: Configuration) {
-        this.configuration = configuration
-    }
+  private var configuration = Configuration()
+  override fun getState(): Configuration = configuration
+  override fun loadState(configuration: Configuration) {
+    this.configuration = configuration
+  }
 
-    internal class Configuration {
-        var enabled: Boolean? = false
-        var sendContent: Boolean? = null // TODO implement sending content via stdin to formatter
-        var classPath: String? = "swiss-google-java-format-1.15.0-all-deps.jar"
-        var mainClass: String? = "com.google.googlejavaformat.java.Main"
-        var arguments: String? = "--swiss {}"
-        var workingDir: String? = Path.of(
-            PathManager.getPluginsPath(), "external-java-formatter-intellij-plugin", "lib"
-        ).toString()
-        var vmOptions: String? = """
+  internal class Configuration {
+    var enabled: Boolean? = false
+    var sendContent: Boolean? = null // TODO implement sending content via stdin to formatter
+    var classPath: String? = "configurable-google-java-format-1.15.0-all-deps.jar"
+    var mainClass: String? = "com.google.googlejavaformat.java.Main"
+    var arguments: String? = "--width=120 {}"
+    var workingDir: String? = Path.of(
+      PathManager.getPluginsPath(), "external-java-formatter-intellij-plugin", "lib"
+    ).toString()
+    var vmOptions: String? = """
             --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
             --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
             --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
@@ -48,6 +48,6 @@ internal class PersistConfigurationService : PersistentStateComponent<PersistCon
             --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
             --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
         """.trimIndent()
-        var testCode: String? = ""
-    }
+    var testCode: String? = ""
+  }
 }
