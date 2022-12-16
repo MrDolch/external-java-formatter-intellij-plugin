@@ -4,9 +4,13 @@
 
 ## [0.0.3] - 2022-12-16
 
+### Added
+
 - call platform formatter prior formatting service
 
 ## [0.0.2] - 2022-12-13
+
+### Added
 
 ## [0.0.1] - 2022-12-08
 
