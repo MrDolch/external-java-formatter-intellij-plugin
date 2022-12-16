@@ -30,7 +30,7 @@ internal class PersistConfigurationService : PersistentStateComponent<PersistCon
   internal class Configuration {
     var enabled: Boolean? = false
     var sendContent: Boolean? = null // TODO implement sending content via stdin to formatter
-    var classPath: String? = "configurable-google-java-format-1.15.0-all-deps.jar"
+    var classPath: String? = "configurable-google-java-format-1.15.0.1-all-deps.jar"
     var mainClass: String? = "com.google.googlejavaformat.java.Main"
     var arguments: String? = "--width=120 {}"
     var workingDir: String? = Path.of(

@@ -6,6 +6,12 @@
 
 ### Added
 
+- Remove prior call to platform formatter.
+
+## [0.0.3]
+
+### Added
+
 - Call platform formatter prior formatting service.
 
 ## [0.0.2] - 2022-12-13
