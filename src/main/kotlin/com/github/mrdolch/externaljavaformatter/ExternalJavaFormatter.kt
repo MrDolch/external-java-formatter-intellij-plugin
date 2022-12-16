@@ -7,6 +7,7 @@ import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
+import com.intellij.formatting.service.CoreFormattingService
 import com.intellij.formatting.service.FormattingService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
@@ -18,11 +19,10 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 
-class ExternalJavaFormatter : AsyncDocumentFormattingService() {
-  override fun getFeatures(): MutableSet<FormattingService.Feature> {
-    return mutableSetOf()
-  }
 
+class ExternalJavaFormatter : AsyncDocumentFormattingService() {
+  override fun getFeatures(): Set<FormattingService.Feature> = setOf()
+  override fun runAfter(): Class<CoreFormattingService> = CoreFormattingService::class.java
   override fun getTimeout(): Duration = Duration.ofSeconds(5)
   override fun canFormat(file: PsiFile): Boolean = file.fileType.name == "JAVA"
   private fun getRelevantJdk(project: Project): Sdk? = ProjectRootManager.getInstance(project).projectSdk
@@ -56,9 +56,11 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
           val handler = OSProcessHandler(commandLine)
           handler.addProcessListener(object : CapturingProcessAdapter() {
             override fun processTerminated(event: ProcessEvent) =
-              if (isCanceled) {
-              } else if (event.exitCode == 0) formattingRequest.onTextReady(output.stdout)
-              else formattingRequest.onError("FormattingError", output.stderr)
+              when {
+                isCanceled -> {}
+                event.exitCode == 0 -> formattingRequest.onTextReady(output.stdout)
+                else -> formattingRequest.onError("FormattingError", output.stderr)
+              }
           })
           handler.startNotify()
         }

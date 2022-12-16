@@ -2,6 +2,12 @@
 
 # external-java-format-intellij-plugin Changelog
 
+## [0.0.3] - 2022-12-16
+
+- call platform formatter prior formatting service
+
+## [0.0.2] - 2022-12-13
+
 ## [0.0.1] - 2022-12-08
 
 ### Added
