@@ -259,6 +259,8 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
         FormattingNotificationService.getInstance(myContext.project).reportError(notificationGroupId, title, message)
       }
     }
+
+//    override fun onError(title: String, message: String, offset: Int) { onError(title, message)    }
   }
 
   interface FormattingTask : Runnable {
