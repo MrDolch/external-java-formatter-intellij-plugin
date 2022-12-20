@@ -5,7 +5,6 @@ import com.intellij.execution.configurations.SimpleJavaParameters
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
-import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
@@ -25,7 +24,7 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
   @OptIn(InternalCoroutinesApi::class)
   override fun createFormattingTask(formattingRequest: AsyncFormattingRequest): FormattingTask? {
     val jdk = getRelevantJdk(formattingRequest.context.project) ?: return null
-    val file = formattingRequest.ioFile ?: return null
+    val file = formattingRequest.iOFile ?: return null
 
     val configuration = formattingRequest.context.project
       .getService(PersistConfigurationService::class.java).state
@@ -62,6 +61,7 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
       }
     }
   }
+
 
   override val notificationGroupId: String = "external google-java-formatter"
 

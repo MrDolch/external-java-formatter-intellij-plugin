@@ -3,7 +3,6 @@ package com.github.mrdolch.externaljavaformatter
 import com.intellij.CodeStyleBundle
 import com.intellij.formatting.FormattingContext
 import com.intellij.formatting.service.AbstractDocumentFormattingService
-import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.DocumentMerger
 import com.intellij.formatting.service.FormattingNotificationService
 import com.intellij.openapi.application.ApplicationManager
@@ -122,36 +121,35 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
       FileDocumentManager.getInstance().saveDocument(document)
     }
 
-    override fun getIOFile(): File? {
-      val originalFile = myContext.virtualFile
-      val ext: String?
-      val charset: Charset
-      if (originalFile != null) {
-        if (originalFile.isInLocalFileSystem) {
-          val localPath = originalFile.fileSystem.getNioPath(originalFile)
-          if (localPath != null) {
-            return localPath.toFile()
+    override val iOFile: File?
+      get() {
+        val originalFile = myContext.virtualFile
+        val ext: String?
+        val charset: Charset
+        if (originalFile != null) {
+          if (originalFile.isInLocalFileSystem) {
+            val localPath = originalFile.fileSystem.getNioPath(originalFile)
+            if (localPath != null) {
+              return localPath.toFile()
+            }
           }
+          ext = originalFile.extension
+          charset = originalFile.charset
+        } else {
+          ext = myContext.containingFile.fileType.defaultExtension
+          charset = EncodingManager.getInstance().defaultCharset
         }
-        ext = originalFile.extension
-        charset = originalFile.charset
-      } else {
-        ext = myContext.containingFile.fileType.defaultExtension
-        charset = EncodingManager.getInstance().defaultCharset
+        return try {
+          val tempFile = FileUtilRt.createTempFile("ij-format-temp", ".$ext", true)
+          FileWriter(tempFile, charset).use { writer -> writer.write(documentText) }
+          tempFile
+        } catch (e: IOException) {
+          logger.warn(e)
+          null
+        }
       }
-      return try {
-        val tempFile = FileUtilRt.createTempFile("ij-format-temp", ".$ext", true)
-        FileWriter(tempFile, charset).use { writer -> writer.write(documentText) }
-        tempFile
-      } catch (e: IOException) {
-        logger.warn(e)
-        null
-      }
-    }
 
-    override fun getDocumentText(): String {
-      return document.text
-    }
+    override val documentText: String = document.text
 
     fun cancel(): Boolean {
       val formattingTask = myTask
@@ -169,17 +167,13 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
       return false
     }
 
-    override fun getFormattingRanges(): List<TextRange> {
-      return myRanges
-    }
+    override val formattingRanges = myRanges
 
     override fun canChangeWhitespaceOnly(): Boolean {
       return myCanChangeWhitespaceOnly
     }
 
-    override fun getContext(): FormattingContext {
-      return myContext
-    }
+    override val context = myContext
 
     fun setTask(formattingTask: FormattingTask) {
       myTask = formattingTask
@@ -242,9 +236,7 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
       PsiDocumentManager.getInstance(myContext.project).commitDocument(document)
     }
 
-    override fun isQuickFormat(): Boolean {
-      return myQuickFormat
-    }
+    override val isQuickFormat = myQuickFormat
 
     override fun onTextReady(updatedText: String) {
       if (myStateRef.compareAndSet(FormattingRequestState.RUNNING, FormattingRequestState.COMPLETED)) {
