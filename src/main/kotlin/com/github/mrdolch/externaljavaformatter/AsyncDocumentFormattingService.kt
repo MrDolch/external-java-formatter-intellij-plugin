@@ -1,5 +1,6 @@
 package com.github.mrdolch.externaljavaformatter
 
+import com.github.mrdolch.externaljavaformatter.AsyncDocumentFormattingService.FormattingRequestState.*
 import com.intellij.CodeStyleBundle
 import com.intellij.formatting.FormattingContext
 import com.intellij.formatting.service.AbstractDocumentFormattingService
@@ -16,9 +17,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.encoding.EncodingManager
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.ThrowableRunnable
-import com.intellij.util.containers.ContainerUtil
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -30,60 +29,49 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingService() {
-  private val myPendingRequests = Collections.synchronizedList(ArrayList<AsyncFormattingRequest>())
+  private val logger = Logger.getInstance(AsyncDocumentFormattingService::class.java)
+  private val pendingRequests = Collections.synchronizedList(ArrayList<FormattingRequest>())
+  private val timeout = Duration.ofSeconds(30)!!
+  private val retryPeriod = 1000 // milliseconds
 
   @Synchronized
   override fun formatDocument(
     document: Document,
-    formattingRanges: List<TextRange>,
-    formattingContext: FormattingContext,
-    canChangeWhiteSpaceOnly: Boolean,
-    quickFormat: Boolean
+    formattingRanges: List<TextRange>, formattingContext: FormattingContext,
+    canChangeWhiteSpaceOnly: Boolean, quickFormat: Boolean
   ) {
-    val currRequest = findPendingRequest(document)
-    if (currRequest != null) {
-      if (!(currRequest as FormattingRequestImpl).cancel()) {
-        logger.warn("Pending request can't be cancelled")
-        return
-      }
+    findPendingRequest(document)?.let { formattingRequest ->
+      if (!formattingRequest.cancel()) return
     }
-    val formattingRequest = FormattingRequestImpl(
-      formattingContext, document, formattingRanges,
-      canChangeWhiteSpaceOnly, quickFormat
-    )
-    val formattingTask = createFormattingTask(formattingRequest)
-    if (formattingTask != null) {
-      formattingRequest.setTask(formattingTask)
-      myPendingRequests.add(formattingRequest)
-      if (ApplicationManager.getApplication().isHeadlessEnvironment) {
-        runAsyncFormat(formattingRequest, null)
-      } else {
-        if (formattingTask.isRunUnderProgress) {
-          FormattingProgressTask(formattingRequest).setCancelText(
-            CodeStyleBundle.message(
-              "async.formatting.service.cancel",
-              name
-            )
-          ).queue()
-        } else {
-          ApplicationManager.getApplication().executeOnPooledThread { runAsyncFormat(formattingRequest, null) }
+    val formattingRequest = FormattingRequest(formattingContext, document)
+    createFormattingTask(formattingRequest)?.let { formattingTask ->
+      formattingRequest.myTask = formattingTask
+      pendingRequests.add(formattingRequest)
+      when {
+        ApplicationManager.getApplication().isHeadlessEnvironment -> {
+          runAsyncFormat(formattingRequest, null)
+        }
+
+        else -> {
+          FormattingProgressTask(formattingRequest)
+            .setCancelText(CodeStyleBundle.message("async.formatting.service.cancel", name))
+            .queue()
         }
       }
     }
   }
 
-  private fun findPendingRequest(document: Document): AsyncFormattingRequest? {
-    synchronized(myPendingRequests) {
-      return ContainerUtil
-        .find(myPendingRequests) { request: AsyncFormattingRequest -> (request as FormattingRequestImpl).document === document }
+  private fun findPendingRequest(document: Document): FormattingRequest? {
+    synchronized(pendingRequests) {
+      return pendingRequests.firstOrNull { request -> request.document === document }
     }
   }
 
-  private fun runAsyncFormat(formattingRequest: FormattingRequestImpl, indicator: ProgressIndicator?) {
+  private fun runAsyncFormat(formattingRequest: FormattingRequest, indicator: ProgressIndicator?) {
     try {
       formattingRequest.runTask(indicator)
     } finally {
-      myPendingRequests.remove(formattingRequest)
+      pendingRequests.remove(formattingRequest)
     }
   }
 
@@ -94,34 +82,30 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
    * @return [FormattingTask] if successful and formatting can proceed, `null` otherwise. The latter may be a result, for
    * example, of misconfiguration.
    */
-  protected abstract fun createFormattingTask(formattingRequest: AsyncFormattingRequest): FormattingTask?
+  protected abstract fun createFormattingTask(formattingRequest: FormattingRequest): FormattingTask?
   protected abstract val notificationGroupId: String
   protected abstract val name: String
 
-  private enum class FormattingRequestState {
-    NOT_STARTED, RUNNING, CANCELLING, CANCELLED, COMPLETED, EXPIRED
-  }
+  private enum class FormattingRequestState { NOT_STARTED, RUNNING, CANCELLING, CANCELLED, COMPLETED, EXPIRED }
 
-  inner class FormattingRequestImpl constructor(
-    private val myContext: FormattingContext,
-    val document: Document,
-    private val myRanges: List<TextRange>,
-    private val myCanChangeWhitespaceOnly: Boolean,
-    private val myQuickFormat: Boolean
-  ) : AsyncFormattingRequest {
+  inner class FormattingRequest(
+    internal val myContext: FormattingContext,
+    internal val document: Document
+  ) {
+    internal val project = myContext.project
     private val myInitialModificationStamp: Long = document.modificationStamp
     private val myTaskSemaphore = Semaphore(1)
 
     @Volatile
-    private var myTask: FormattingTask? = null
+    internal var myTask: FormattingTask? = null
     private var myResult: String? = null
-    private val myStateRef = AtomicReference(FormattingRequestState.NOT_STARTED)
+    private val myStateRef = AtomicReference(NOT_STARTED)
 
     init {
       FileDocumentManager.getInstance().saveDocument(document)
     }
 
-    override val iOFile: File?
+    val iOFile: File?
       get() {
         val originalFile = myContext.virtualFile
         val ext: String?
@@ -141,7 +125,7 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
         }
         return try {
           val tempFile = FileUtilRt.createTempFile("ij-format-temp", ".$ext", true)
-          FileWriter(tempFile, charset).use { writer -> writer.write(documentText) }
+          FileWriter(tempFile, charset).use { writer -> writer.write(document.text) }
           tempFile
         } catch (e: IOException) {
           logger.warn(e)
@@ -149,110 +133,89 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
         }
       }
 
-    override val documentText: String = document.text
-
     fun cancel(): Boolean {
-      val formattingTask = myTask
-      if (formattingTask != null && myStateRef.compareAndSet(
-          FormattingRequestState.RUNNING,
-          FormattingRequestState.CANCELLING
-        )
-      ) {
-        if (formattingTask.cancel()) {
-          myStateRef.set(FormattingRequestState.CANCELLED)
+      myTask?.let { formattingTask ->
+        if (myStateRef.compareAndSet(RUNNING, CANCELLING) && formattingTask.cancel()) {
+          myStateRef.set(CANCELLED)
           myTaskSemaphore.release()
           return true
         }
       }
+      logger.warn("Pending request can't be cancelled")
       return false
     }
 
-    override val formattingRanges = myRanges
-
-    override fun canChangeWhitespaceOnly(): Boolean {
-      return myCanChangeWhitespaceOnly
-    }
-
-    override val context = myContext
-
-    fun setTask(formattingTask: FormattingTask) {
-      myTask = formattingTask
-    }
-
     fun runTask(indicator: ProgressIndicator?) {
-      val task = myTask
-      if (task != null && myStateRef.compareAndSet(
-          FormattingRequestState.NOT_STARTED,
-          FormattingRequestState.RUNNING
-        )
-      ) {
-        try {
-          myTaskSemaphore.acquire()
-          task.run()
-          var waitTime: Long = 0
-          while (waitTime < timeout.seconds * 1000L) {
-            if (myTaskSemaphore.tryAcquire(retryPeriod.toLong(), TimeUnit.MILLISECONDS)) {
-              myTaskSemaphore.release()
-              break
-            }
-            indicator?.checkCanceled()
-            waitTime += retryPeriod.toLong()
+      val task = myTask ?: return
+      if (!myStateRef.compareAndSet(NOT_STARTED, RUNNING)) return
+
+      try {
+        myTaskSemaphore.acquire()
+        task.run()
+        var waitTime: Long = 0
+        while (waitTime < timeout.seconds * 1000L) {
+          if (myTaskSemaphore.tryAcquire(retryPeriod.toLong(), TimeUnit.MILLISECONDS)) {
+            myTaskSemaphore.release()
+            break
           }
-          if (myStateRef.compareAndSet(FormattingRequestState.RUNNING, FormattingRequestState.EXPIRED)) {
-            FormattingNotificationService.getInstance(myContext.project)
-              .reportError(
-                notificationGroupId, name,
-                CodeStyleBundle.message("async.formatting.service.timeout", name, timeout.seconds.toString())
-              )
-          } else if (myResult != null) {
-            if (ApplicationManager.getApplication().isWriteAccessAllowed) {
-              updateDocument(myResult!!)
-            } else {
-              ApplicationManager.getApplication().invokeLater {
-                CommandProcessor.getInstance().runUndoTransparentAction {
-                  try {
-                    WriteAction.run(ThrowableRunnable { updateDocument(myResult!!) })
-                  } catch (throwable: Throwable) {
-                    logger.error(throwable)
-                  }
-                }
+          indicator?.checkCanceled()
+          waitTime += retryPeriod.toLong()
+        }
+        when {
+          myStateRef.compareAndSet(RUNNING, EXPIRED) -> {
+            FormattingNotificationService.getInstance(project).reportError(
+              notificationGroupId, name,
+              CodeStyleBundle.message("async.formatting.service.timeout", name, timeout.seconds)
+            )
+          }
+
+          myResult == null -> {}
+
+          ApplicationManager.getApplication().isWriteAccessAllowed -> updateDocument(myResult!!)
+
+          else -> {
+            ApplicationManager.getApplication().invokeLater {
+              CommandProcessor.getInstance().runUndoTransparentAction {
+                WriteAction.run(ThrowableRunnable {
+                  updateDocument(myResult!!)
+                })
               }
             }
           }
-        } catch (ie: InterruptedException) {
-          logger.warn("Interrupted formatting thread.")
         }
+      } catch (ie: InterruptedException) {
+        logger.warn("Interrupted formatting thread.")
       }
     }
 
     private fun updateDocument(newText: String) {
       if (document.modificationStamp > myInitialModificationStamp) {
         for (merger in DocumentMerger.EP_NAME.extensionList) {
-          if (merger.updateDocument(document, newText)) break
+          if (merger.updateDocument(document, newText)) {
+            return
+          }
         }
-      } else {
-        document.setText(newText)
       }
-      PsiDocumentManager.getInstance(myContext.project).commitDocument(document)
+      document.setText(newText)
+
+      FileDocumentManager.getInstance().saveDocument(document)
+//      PsiDocumentManager.getInstance(project).commitDocument(document)
     }
 
-    override val isQuickFormat = myQuickFormat
-
-    override fun onTextReady(updatedText: String) {
-      if (myStateRef.compareAndSet(FormattingRequestState.RUNNING, FormattingRequestState.COMPLETED)) {
+    fun onTextReady(updatedText: String) {
+      if (myStateRef.compareAndSet(RUNNING, COMPLETED)) {
         myResult = updatedText
         myTaskSemaphore.release()
       }
     }
 
-    override fun onError(title: String, message: String) {
-      if (myStateRef.compareAndSet(FormattingRequestState.RUNNING, FormattingRequestState.COMPLETED)) {
+    fun onError(title: String, message: String) {
+      if (myStateRef.compareAndSet(RUNNING, COMPLETED)) {
         myTaskSemaphore.release()
-        FormattingNotificationService.getInstance(myContext.project).reportError(notificationGroupId, title, message)
+        FormattingNotificationService.getInstance(project)
+          .reportError(notificationGroupId, title, message)
       }
     }
-
-//    override fun onError(title: String, message: String, offset: Int) { onError(title, message)    }
   }
 
   interface FormattingTask : Runnable {
@@ -261,33 +224,21 @@ abstract class AsyncDocumentFormattingService : AbstractDocumentFormattingServic
      * @return `true` if the runnable has been successfully cancelled, `false` otherwise.
      */
     fun cancel(): Boolean
-    val isRunUnderProgress: Boolean
-      /**
-       * @return True if the task must be run under progress (a progress indicator is created automatically). Otherwise, the task is
-       * responsible for visualizing the progress by itself, it is just started on a background thread.
-       */
-      get() = false
   }
 
-  inner class FormattingProgressTask(private val myRequest: FormattingRequestImpl) :
-    Task.Backgroundable(
-      myRequest.context.project,
-      CodeStyleBundle.message("async.formatting.service.running", name),
-      true
-    ) {
+  inner class FormattingProgressTask(private val formattingRequest: FormattingRequest) : Task.Backgroundable(
+    formattingRequest.project, CodeStyleBundle.message("async.formatting.service.running", name), true
+  ) {
     override fun run(indicator: ProgressIndicator) {
       indicator.isIndeterminate = false
       indicator.fraction = 0.0
-      runAsyncFormat(myRequest, indicator)
+      runAsyncFormat(formattingRequest, indicator)
       indicator.fraction = 1.0
     }
 
     override fun onCancel() {
-      myRequest.cancel()
+      formattingRequest.cancel()
     }
   }
 
-  val logger = Logger.getInstance(AsyncDocumentFormattingService::class.java)
-  val timeout = Duration.ofSeconds(5)!!
-  val retryPeriod = 1000 // milliseconds
 }

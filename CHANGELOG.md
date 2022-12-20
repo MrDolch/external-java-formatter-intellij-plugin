@@ -2,7 +2,13 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased]
+## [Unreleased] - 2022-12-20
+
+### Added
+
+- Fix Unsaved-Documents-Bug.
+
+## [0.0.5] - 2022-12-19
 
 ### Added
 

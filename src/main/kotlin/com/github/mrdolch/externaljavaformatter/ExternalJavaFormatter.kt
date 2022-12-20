@@ -22,11 +22,11 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
   private fun getRelevantJdk(project: Project): Sdk? = ProjectRootManager.getInstance(project).projectSdk
 
   @OptIn(InternalCoroutinesApi::class)
-  override fun createFormattingTask(formattingRequest: AsyncFormattingRequest): FormattingTask? {
-    val jdk = getRelevantJdk(formattingRequest.context.project) ?: return null
+  override fun createFormattingTask(formattingRequest: FormattingRequest): FormattingTask? {
+    val jdk = getRelevantJdk(formattingRequest.myContext.project) ?: return null
     val file = formattingRequest.iOFile ?: return null
 
-    val configuration = formattingRequest.context.project
+    val configuration = formattingRequest.myContext.project
       .getService(PersistConfigurationService::class.java).state
 
     if (configuration.enabled != true) return null
@@ -35,8 +35,6 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
       return object : FormattingTask {
         private var handler: OSProcessHandler? = null
         private var isCanceled = false
-
-        override val isRunUnderProgress: Boolean = true
 
         override fun cancel(): Boolean {
           if (handler == null) isCanceled = true
