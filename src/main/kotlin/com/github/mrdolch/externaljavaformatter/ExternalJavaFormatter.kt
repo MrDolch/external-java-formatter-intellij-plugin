@@ -5,7 +5,6 @@ import com.intellij.execution.configurations.SimpleJavaParameters
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
-import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
 import com.intellij.openapi.project.Project
@@ -16,12 +15,10 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
 import java.io.File
 import java.nio.charset.StandardCharsets
-import java.time.Duration
 
 
 class ExternalJavaFormatter : AsyncDocumentFormattingService() {
   override fun getFeatures(): Set<FormattingService.Feature> = setOf()
-  override fun getTimeout(): Duration = Duration.ofSeconds(5)
   override fun canFormat(file: PsiFile): Boolean = file.fileType.name == "JAVA"
   private fun getRelevantJdk(project: Project): Sdk? = ProjectRootManager.getInstance(project).projectSdk
 
@@ -40,7 +37,7 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
         private var handler: OSProcessHandler? = null
         private var isCanceled = false
 
-        override fun isRunUnderProgress(): Boolean = true
+        override val isRunUnderProgress: Boolean = true
 
         override fun cancel(): Boolean {
           if (handler == null) isCanceled = true
@@ -66,6 +63,10 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
     }
   }
 
+  override val notificationGroupId: String = "external google-java-formatter"
+
+  override val name: String = "external google-java-formatter"
+
   private fun buildCommandLine(
     configuration: PersistConfigurationService.Configuration, jdk: Sdk, file: File
   ): GeneralCommandLine {
@@ -86,13 +87,5 @@ class ExternalJavaFormatter : AsyncDocumentFormattingService() {
       trim().split("\\n+".toRegex()).forEach(params.vmParametersList::add)
     }
     return params.toCommandLine().withCharset(StandardCharsets.UTF_8)
-  }
-
-  override fun getNotificationGroupId(): String {
-    return "external google-java-formatter";
-  }
-
-  override fun getName(): String {
-    return "external google-java-formatter";
   }
 }

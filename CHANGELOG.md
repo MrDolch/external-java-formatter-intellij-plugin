@@ -6,6 +6,12 @@
 
 ### Added
 
+- Fix Unsaved-Documents-Bug
+
+## [0.0.4]
+
+### Added
+
 - Remove prior call to platform formatter.
 
 ## [0.0.3]
