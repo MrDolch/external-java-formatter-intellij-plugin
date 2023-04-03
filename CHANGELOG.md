@@ -2,7 +2,13 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased] - 2022-12-22
+## [Unreleased] - 2023-04-03
+
+## [0.0.8] - 2023-04-03
+
+- Remove Until-Version
+
+## [0.0.7] - 2022-12-22
 
 - Refactoring.
 
