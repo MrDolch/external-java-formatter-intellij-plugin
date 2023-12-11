@@ -4,9 +4,13 @@
 
 ## [Unreleased] - 2023-08-14
 
+## [0.0.10] - 2023-12-11
+
+- Support Intellij 2023.3
+
 ## [0.0.9] - 2023-08-14
 
-- Support Intellij 2023.1.5
+- Support Intellij 2023.2
 
 ## [0.0.8] - 2023-04-03
 
