@@ -2,7 +2,11 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased] - 2023-08-14
+## [Unreleased] - 2024-02-23
+
+## [0.0.11] - 2024-02-23
+
+- Support Java 21
 
 ## [0.0.10] - 2023-12-11
 
