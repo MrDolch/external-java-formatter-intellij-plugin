@@ -4,6 +4,10 @@
 
 ## [Unreleased] - 2024-02-23
 
+## [0.0.12] - 2024-02-25
+
+- preparation for marketplace
+
 ## [0.0.11] - 2024-02-23
 
 - Support Java 21

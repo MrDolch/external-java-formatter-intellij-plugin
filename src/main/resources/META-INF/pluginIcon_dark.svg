@@ -1,37 +1,37 @@
 <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
     <line x1="1" x2="5" y1="3" y2="3" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="7" x2="15" y1="3" y2="3" stroke="black" stroke-linecap="round"/>
+    <line x1="7" x2="15" y1="3" y2="3" stroke="white" stroke-linecap="round"/>
 
     <line x1="1" x2="4" y1="7" y2="7" stroke="darkorange" stroke-linecap="round"/>
     <line x1="6" x2="9" y1="7" y2="7" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="11" x2="17" y1="7" y2="7" stroke="black" stroke-linecap="round"/>
+    <line x1="11" x2="17" y1="7" y2="7" stroke="white" stroke-linecap="round"/>
 
     <line x1="1" x2="4" y1="9" y2="9" stroke="darkorange" stroke-linecap="round"/>
     <line x1="6" x2="9" y1="9" y2="9" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="11" x2="19" y1="9" y2="9" stroke="black" stroke-linecap="round"/>
+    <line x1="11" x2="19" y1="9" y2="9" stroke="white" stroke-linecap="round"/>
 
     <line x1="1" x2="4" y1="13" y2="13" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="6" x2="9" y1="13" y2="13" stroke="black" stroke-linecap="round"/>
+    <line x1="6" x2="9" y1="13" y2="13" stroke="white" stroke-linecap="round"/>
 
     <line x1="1" x2="4" y1="15" y2="15" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="6" x2="8" y1="15" y2="15" stroke="black" stroke-linecap="round"/>
+    <line x1="6" x2="8" y1="15" y2="15" stroke="white" stroke-linecap="round"/>
 
     <line x1="1" x2="3" y1="19" y2="19" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="5" x2="10" y1="19" y2="19" stroke="black" stroke-linecap="round"/>
+    <line x1="5" x2="10" y1="19" y2="19" stroke="white" stroke-linecap="round"/>
     <line x1="12" x2="17" y1="19" y2="19" stroke="darkorange" stroke-linecap="round"/>
 
     <line x1="2" x2="4" y1="21" y2="21" stroke="darkorange" stroke-linecap="round"/>
     <line x1="6" x2="7" y1="21" y2="21" stroke="darkorange" stroke-linecap="round"/>
     <line x1="9" x2="12" y1="21" y2="21" stroke="yellow" stroke-linecap="round"/>
     <line x1="14" x2="16" y1="21" y2="21" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="18" x2="20" y1="21" y2="21" stroke="black" stroke-linecap="round"/>
+    <line x1="18" x2="20" y1="21" y2="21" stroke="white" stroke-linecap="round"/>
     <line x1="22" x2="25" y1="21" y2="21" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="27" x2="29" y1="21" y2="21" stroke="black" stroke-linecap="round"/>
+    <line x1="27" x2="29" y1="21" y2="21" stroke="white" stroke-linecap="round"/>
 
     <line x1="3" x2="5" y1="23" y2="23" stroke="darkorange" stroke-linecap="round"/>
-    <line x1="7" x2="18" y1="23" y2="23" stroke="black" stroke-linecap="round"/>
+    <line x1="7" x2="18" y1="23" y2="23" stroke="white" stroke-linecap="round"/>
 
-    <line x1="5" x2="11" y1="25" y2="25" stroke="black" stroke-linecap="round"/>
-    <line x1="5" x2="23" y1="27" y2="27" stroke="black" stroke-linecap="round"/>
-    <line x1="5" x2="9" y1="29" y2="29" stroke="black" stroke-linecap="round"/>
+    <line x1="5" x2="11" y1="25" y2="25" stroke="white" stroke-linecap="round"/>
+    <line x1="5" x2="23" y1="27" y2="27" stroke="white" stroke-linecap="round"/>
+    <line x1="5" x2="9" y1="29" y2="29" stroke="white" stroke-linecap="round"/>
 </svg>
