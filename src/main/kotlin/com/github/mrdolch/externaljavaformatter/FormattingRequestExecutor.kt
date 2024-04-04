@@ -1,6 +1,7 @@
 package com.github.mrdolch.externaljavaformatter
 
 import com.github.mrdolch.externaljavaformatter.PersistConfigurationService.Configuration
+import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.SimpleJavaParameters
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.OSProcessHandler
@@ -17,12 +18,7 @@ import java.io.File
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 
-class FormattingRequestExecutor(
-  private val context: FormattingContext,
-  private val document: Document,
-  private val sdk: Sdk,
-  private val configuration: Configuration
-) {
+class FormattingRequestExecutor(private val context: FormattingContext, private val document: Document, private val sdk: Sdk, private val configuration: Configuration) {
   private val initialDocumentModificationStamp: Long = document.modificationStamp
   private val notifications = FormattingNotificationService.getInstance(context.project)
 
@@ -32,28 +28,11 @@ class FormattingRequestExecutor(
 
   internal fun executeExternalFormatterProcess() {
     val fileToFormat = getDocumentFileOnLocalFileSystem()
-    val commandLine = SimpleJavaParameters().let { params ->
-      params.jdk = sdk
-      params.workingDirectory = configuration.workingDir
-      params.mainClass = configuration.mainClass
-      configuration.classPath?.run {
-        trim().split("[:;]+".toRegex()).forEach(params.classPath::add)
-      }
-      configuration.arguments?.run {
-        trim().split("\\s+".toRegex()).forEach { argument ->
-          if (argument != "{}") params.programParametersList.add(argument)
-          else params.programParametersList.add(fileToFormat.absolutePath)
-        }
-      }
-      configuration.vmOptions?.run {
-        trim().split("\\n+".toRegex()).forEach(params.vmParametersList::add)
-      }
-      params.toCommandLine().withCharset(StandardCharsets.UTF_8)
-    }
+    val commandLine = createCommandLine(fileToFormat, sdk, configuration.workingDir, configuration.mainClass, configuration.classPath, configuration.arguments, configuration.vmOptions)
     with(OSProcessHandler(commandLine)) {
       addProcessListener(FormattingDoneListener(this@FormattingRequestExecutor))
       startNotify()
-      waitFor(timeout.seconds * 1000).let {
+      waitFor(timeoutInSeconds * 1000L).let {
         if (!it) notifications.reportError(notificationGroup, name, timeoutMessage)
       }
     }
@@ -78,14 +57,37 @@ class FormattingRequestExecutor(
     val ext = if (vFile != null) vFile.extension else context.containingFile.fileType.defaultExtension
     val charset = vFile?.charset ?: EncodingManager.getInstance().defaultCharset
     return FileUtilRt.createTempFile("ij-format-temp", ".$ext", true)
-      .also { tempFile -> FileWriter(tempFile, charset).use { writer -> writer.write(document.text) } }
+        .also { tempFile -> FileWriter(tempFile, charset).use { writer -> writer.write(document.text) } }
   }
 
   private fun updateDocument(newText: String) {
-    DocumentMerger.EP_NAME.extensionList
-      .filter { document.modificationStamp > initialDocumentModificationStamp }
-      .find { merger -> merger.updateDocument(document, newText) }
-      ?: let { document.setText(newText) }
+    DocumentMerger.EP_NAME.extensionList.filter { document.modificationStamp > initialDocumentModificationStamp }
+        .find { merger -> merger.updateDocument(document, newText) }
+        ?: let { document.setText(newText) }
     fileDocumentManager.saveDocument(document)
+  }
+
+  companion object {
+
+    fun createCommandLine(fileToFormat: File, sdk: Sdk, workingDir: String?, mainClass: String?, classPath: String?, arguments: String?, vmOptions: String?): GeneralCommandLine {
+      return SimpleJavaParameters().let { params ->
+        params.jdk = sdk
+        params.workingDirectory = workingDir
+        params.mainClass = mainClass
+        classPath?.run {
+          trim().split("[:;]+".toRegex()).forEach(params.classPath::add)
+        }
+        arguments?.run {
+          trim().split("\\s+".toRegex()).forEach { argument ->
+            if (argument != "{}") params.programParametersList.add(argument)
+            else params.programParametersList.add(fileToFormat.absolutePath)
+          }
+        }
+        vmOptions?.run {
+          trim().split("\\n+".toRegex()).forEach(params.vmParametersList::add)
+        }
+        params.toCommandLine().withCharset(StandardCharsets.UTF_8)
+      }
+    }
   }
 }

@@ -2,7 +2,11 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased] - 2024-02-23
+## [Unreleased] - 2024-04-04
+
+## [1.0.0] - 2024-04-04
+
+- implement test-button for preview and verify configuration
 
 ## [0.0.12] - 2024-02-25
 

@@ -16,13 +16,12 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
-import java.time.Duration
 import java.util.*
 
 internal const val notificationGroup: String = "external google-java-formatter"
 internal const val name: String = "external google-java-formatter"
-internal val timeout = Duration.ofSeconds(10)!!
-internal val timeoutMessage = CodeStyleBundle.message("async.formatting.service.timeout", name, timeout.seconds)
+internal const val timeoutInSeconds = 10
+internal val timeoutMessage = CodeStyleBundle.message("async.formatting.service.timeout", name, timeoutInSeconds)
 internal val application = ApplicationManager.getApplication()
 internal val fileDocumentManager = FileDocumentManager.getInstance()
 internal val commandProcessor = CommandProcessor.getInstance()
