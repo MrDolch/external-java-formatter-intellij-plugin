@@ -16,7 +16,7 @@ class PersistConfigurationService : PersistentStateComponent<PersistConfiguratio
 
   class Configuration {
     var enabled: Boolean? = false
-    var sendContent: Boolean? = true
+    var useStandardIn: Boolean? = true
     var classPath: String? = "configurable-google-java-format-2024.21.0-all-deps.jar"
     var mainClass: String? = "com.google.googlejavaformat.java.Main"
     var arguments: String? = "--width=120 --assume-filename {} -"

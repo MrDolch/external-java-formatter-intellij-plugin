@@ -24,7 +24,7 @@ import kotlin.math.max
 internal class ConfigurationPanel(private val project: Project) : BaseConfigurable(), SearchableConfigurable {
   private val panel: JPanel = JPanel()
   private val enabled: JCheckBox = JCheckBox("Enable external-java-formatter")
-  private val sendContent: JCheckBox = JCheckBox("Send content to Formatter over Standard-In. Otherwise, use {} in Arguments to mark where filename is inserted.")
+  private val useStandardIn: JCheckBox = JCheckBox("Send content to Formatter over Standard-In. Otherwise, use {} in Arguments to mark where filename is inserted.")
   private val classPath: JTextField = JTextField()
   private val mainClass: JTextField = JTextField()
   private val arguments: JTextField = JTextField()
@@ -44,7 +44,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
   override fun apply() {
     val configuration = project.getService(PersistConfigurationService::class.java).state
     configuration.enabled = enabled.isSelected
-    configuration.sendContent = sendContent.isSelected
+    configuration.useStandardIn = useStandardIn.isSelected
     configuration.classPath = classPath.text
     configuration.mainClass = mainClass.text
     configuration.arguments = arguments.text
@@ -56,7 +56,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
   override fun reset() {
     val configuration = project.getService(PersistConfigurationService::class.java).state
     enabled.isSelected = configuration.enabled ?: false
-    sendContent.isSelected = configuration.sendContent ?: false
+    useStandardIn.isSelected = configuration.useStandardIn ?: false
     classPath.text = configuration.classPath
     mainClass.text = configuration.mainClass
     arguments.text = configuration.arguments
@@ -70,7 +70,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
   override fun isModified(): Boolean {
     val configuration = project.getService(PersistConfigurationService::class.java).state
     return enabled.isSelected != configuration.enabled
-        || sendContent.isSelected != configuration.sendContent
+        || useStandardIn.isSelected != configuration.useStandardIn
         || classPath.text != configuration.classPath
         || mainClass.text != configuration.mainClass
         || arguments.text != configuration.arguments
@@ -100,7 +100,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
         GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
     panel.add(JLabel("Class Path"), left(++currentRow)); panel.add(classPath, right(currentRow))
     panel.add(JLabel("Main Class"), left(++currentRow)); panel.add(mainClass, right(currentRow))
-    panel.add(sendContent, GridConstraints(
+    panel.add(useStandardIn, GridConstraints(
         ++currentRow, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
         GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
         GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
@@ -154,7 +154,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
       CapturingProcessHandler(commandLine).also { processHandler ->
         processHandler.addProcessListener(object : ProcessAdapter() {
           override fun startNotified(event: ProcessEvent) {
-            if (sendContent.isSelected && stdIn != null) {
+            if (useStandardIn.isSelected && stdIn != null) {
               processHandler.processInput.writer(commandLine.charset).use { it.write(stdIn) }
             }
           }

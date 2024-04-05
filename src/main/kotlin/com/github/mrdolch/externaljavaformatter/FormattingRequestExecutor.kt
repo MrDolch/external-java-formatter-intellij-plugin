@@ -24,7 +24,7 @@ class FormattingRequestExecutor(private val context: FormattingContext, private 
   private val notifications = FormattingNotificationService.getInstance(context.project)
 
   init {
-    if (configuration.sendContent != true) fileDocumentManager.saveDocument(document)
+    if (configuration.useStandardIn != true) fileDocumentManager.saveDocument(document)
   }
 
   internal fun executeExternalFormatterProcess() {
