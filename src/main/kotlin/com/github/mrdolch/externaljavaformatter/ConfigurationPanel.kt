@@ -1,6 +1,9 @@
 package com.github.mrdolch.externaljavaformatter
 
+import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.options.BaseConfigurable
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.progress.ProgressManager
@@ -11,7 +14,6 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.intellij.uiDesigner.core.Spacer
 import com.intellij.util.ui.JBUI
-import org.jetbrains.annotations.Nls
 import java.awt.Dimension
 import java.awt.Font
 import java.io.File
@@ -22,7 +24,7 @@ import kotlin.math.max
 internal class ConfigurationPanel(private val project: Project) : BaseConfigurable(), SearchableConfigurable {
   private val panel: JPanel = JPanel()
   private val enabled: JCheckBox = JCheckBox("Enable external-java-formatter")
-  private val sendContent: JCheckBox = JCheckBox("Send content to Formatter over Standard-In")
+  private val sendContent: JCheckBox = JCheckBox("Send content to Formatter over Standard-In. Otherwise, use {} in Arguments to mark where filename is inserted.")
   private val classPath: JTextField = JTextField()
   private val mainClass: JTextField = JTextField()
   private val arguments: JTextField = JTextField()
@@ -90,34 +92,26 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
     testCodePane.preferredSize = Dimension(mainClass.preferredSize.width, 200)
     workingDir.preferredSize = Dimension(mainClass.preferredSize.width, workingDir.preferredSize.height)
 
-    panel.layout = GridLayoutManager(9, 2, JBUI.emptyInsets(), -1, -1)
-    panel.add(
-        enabled, GridConstraints(
-        0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+    panel.layout = GridLayoutManager(10, 2, JBUI.emptyInsets(), -1, -1)
+    var currentRow = 0;
+    panel.add(enabled, GridConstraints(
+        currentRow, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
         GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
-        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false
-    )
-    )
-    panel.add(JLabel("Class Path"), left(1))
-    panel.add(classPath, right(1))
-    panel.add(JLabel("Main Class"), left(2))
-    panel.add(mainClass, right(2))
-    panel.add(JLabel("Arguments"), left(3))
-    panel.add(arguments, right(3))
-    panel.add(JLabel("Working Dir"), left(4))
-    panel.add(workingDir, right(4))
-    panel.add(JLabel("VM-Options"), left(5))
-    panel.add(vmOptionsPane, right(5, Dimension(50, 50)))
-    panel.add(JLabel("Test-Code"), left(6))
-    panel.add(testCodePane, right(6, Dimension(50, 50)))
-    panel.add(testButton, left(7))
-    panel.add(JLabel(""), left(7))
-    panel.add(
-        Spacer(), GridConstraints(
-        8, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL,
-        1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false
-    )
-    )
+        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+    panel.add(JLabel("Class Path"), left(++currentRow)); panel.add(classPath, right(currentRow))
+    panel.add(JLabel("Main Class"), left(++currentRow)); panel.add(mainClass, right(currentRow))
+    panel.add(sendContent, GridConstraints(
+        ++currentRow, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+        GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
+        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+    panel.add(JLabel("Arguments"), left(++currentRow)); panel.add(arguments, right(currentRow))
+    panel.add(JLabel("Working Dir"), left(++currentRow)); panel.add(workingDir, right(currentRow))
+    panel.add(JLabel("VM-Options"), left(++currentRow)); panel.add(vmOptionsPane, right(currentRow, Dimension(50, 50)))
+    panel.add(JLabel("Test-Code"), left(++currentRow)); panel.add(testCodePane, right(currentRow, Dimension(50, 50)))
+    panel.add(testButton, left(++currentRow)); panel.add(JLabel(""), right(currentRow))
+    panel.add(Spacer(), GridConstraints(
+        ++currentRow, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL,
+        1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false))
     return panel
   }
 
@@ -138,35 +132,46 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
     tempFile.writeText(testCode.text)
     val commandLine = FormattingRequestExecutor.createCommandLine(
         tempFile, projectSdk, workingDir.text, mainClass.text, classPath.text, arguments.text, vmOptions.text)
+
+
+    val (exitCode, stdOut, stdErr) = execute(commandLine, testCode.text)
+
+    if (exitCode == 0) {
+      val firstDiffPos = findFirstDiffPos(testCode.text, stdOut)
+      testCode.text = stdOut
+      testCode.caretPosition = max(firstDiffPos, 0)
+      testCode.requestFocus()
+      JOptionPane.showMessageDialog(testButton, stdErr.ifBlank { "Ok" }, "Formatting was successfully completed", JOptionPane.INFORMATION_MESSAGE)
+    } else JOptionPane.showMessageDialog(testButton, stdErr.ifBlank { "Error $exitCode" }, "Formatting was terminated with an error $exitCode", JOptionPane.ERROR_MESSAGE)
+  }
+
+  private fun execute(commandLine: GeneralCommandLine, stdIn: String? = null): Triple<Int, String, String> {
     var stdErr = "";
-    var exitCode = 0;
-    val completed = ProgressManager.getInstance().runProcessWithProgressSynchronously(
-        {
-          val capturingProcessHandler = CapturingProcessHandler(commandLine)
-          capturingProcessHandler.runProcess(timeoutInSeconds * 1000)
-              .let {
-                if (it.exitCode == 0) {
-                  val firstDiffPos = findFirstDiffPos(testCode.text, it.stdout)
-                  testCode.text = it.stdout
-                  testCode.caretPosition = max(firstDiffPos, 0)
-                  testCode.requestFocus()
-                }
-                stdErr = it.stderr
-                exitCode = it.exitCode
-              }
-        },
-        "Test formatting ...", true, project
-    )
-    if (completed) {
-      if (exitCode == 0) JOptionPane.showMessageDialog(testButton, stdErr, "Formatting was successfully completed", JOptionPane.INFORMATION_MESSAGE)
-      else JOptionPane.showMessageDialog(testButton, stdErr, "Formatting was terminated with an error", JOptionPane.ERROR_MESSAGE)
-    }
+    var stdOut = "";
+    var exitCode = -1;
+
+    ProgressManager.getInstance().runProcessWithProgressSynchronously({
+      CapturingProcessHandler(commandLine).also { processHandler ->
+        processHandler.addProcessListener(object : ProcessAdapter() {
+          override fun startNotified(event: ProcessEvent) {
+            if (sendContent.isSelected && stdIn != null) {
+              processHandler.processInput.writer(commandLine.charset).use { it.write(stdIn) }
+            }
+          }
+        })
+      }.runProcess(timeoutInSeconds * 1000).also { output ->
+        stdErr = output.stderr
+        stdOut = output.stdout
+        exitCode = output.exitCode
+      }
+    }, "Test formatting ...", true, project)
+    return Triple(exitCode, stdOut, stdErr)
   }
 
   private fun findFirstDiffPos(a: String, b: String): Int {
     var i = 0
     if (a == b) return -1
-    while (a[i] == b[i]) i++
+    while (i < a.length && i < b.length && a[i] == b[i]) i++
     return i
   }
 

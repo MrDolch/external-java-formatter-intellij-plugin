@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.SimpleJavaParameters
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessHandler
 import com.intellij.formatting.FormattingContext
 import com.intellij.formatting.service.DocumentMerger
 import com.intellij.formatting.service.FormattingNotificationService
@@ -23,14 +24,14 @@ class FormattingRequestExecutor(private val context: FormattingContext, private 
   private val notifications = FormattingNotificationService.getInstance(context.project)
 
   init {
-    fileDocumentManager.saveDocument(document)
+    if (configuration.sendContent != true) fileDocumentManager.saveDocument(document)
   }
 
   internal fun executeExternalFormatterProcess() {
     val fileToFormat = getDocumentFileOnLocalFileSystem()
     val commandLine = createCommandLine(fileToFormat, sdk, configuration.workingDir, configuration.mainClass, configuration.classPath, configuration.arguments, configuration.vmOptions)
     with(OSProcessHandler(commandLine)) {
-      addProcessListener(FormattingDoneListener(this@FormattingRequestExecutor))
+      addProcessListener(FormattingDoneListener(this@FormattingRequestExecutor, this, document.text))
       startNotify()
       waitFor(timeoutInSeconds * 1000L).let {
         if (!it) notifications.reportError(notificationGroup, name, timeoutMessage)
@@ -38,7 +39,13 @@ class FormattingRequestExecutor(private val context: FormattingContext, private 
     }
   }
 
-  internal class FormattingDoneListener(private val request: FormattingRequestExecutor) : CapturingProcessAdapter() {
+  internal class FormattingDoneListener(private val request: FormattingRequestExecutor, private val processHandler: ProcessHandler, private val stdIn: String? = null) : CapturingProcessAdapter() {
+    override fun startNotified(event: ProcessEvent) {
+      val processInput = processHandler.processInput
+      if (stdIn != null && processInput != null) {
+        processInput.writer().use { it.write(stdIn) }
+      }
+    }
 
     override fun processTerminated(event: ProcessEvent) = when {
       event.exitCode != 0 -> request.notifications.reportError(notificationGroup, "FormattingError", output.stderr)

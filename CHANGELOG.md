@@ -2,11 +2,13 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased] - 2024-04-04
+## [Unreleased] - 2024-04-05
 
-## [1.0.0] - 2024-04-04
+## [1.0.1] - 2024-04-05
 
 - implement test-button for preview and verify configuration
+- implement the use of Standard-In for formatter instead of filename
+- optimize Icon
 
 ## [0.0.12] - 2024-02-25
 
