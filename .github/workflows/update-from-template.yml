@@ -15,7 +15,7 @@ on:
 env:
   UPDATE_BRANCH: update-from-template
   REMOTE_URL: https://github.com/xdev-software/intellij-plugin-template.git
-  REMOTE_BRANCH: master
+  REMOTE_BRANCH: main
 
 permissions:
   contents: write
