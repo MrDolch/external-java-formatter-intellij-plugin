@@ -3,7 +3,7 @@ name: Sonar
 on:
   workflow_dispatch:
   push:
-    branches: [ develop ]
+    branches: [ main ]
     paths-ignore: 
       - '**.md'
       - '.config/**'

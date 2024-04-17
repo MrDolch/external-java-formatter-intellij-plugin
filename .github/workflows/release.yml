@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [ main ]
+    branches: [ release ]
 
 permissions:
   contents: write
@@ -84,15 +84,16 @@ jobs:
       with:
         tag_name: v${{ steps.version.outputs.release }}
         release_name: v${{ steps.version.outputs.release }}
-        commitish: main
+        commitish: release
         body: |
-          ## [Changelog](https://github.com/xdev-software/${{ github.event.repository.name }}/blob/develop/CHANGELOG.md#${{ steps.version.outputs.releasenumber }})
-          See [Changelog#v${{ steps.version.outputs.release }}](https://github.com/xdev-software/${{ github.event.repository.name }}/blob/develop/CHANGELOG.md#${{ steps.version.outputs.releasenumber }}) for more information.
+          ## [Changelog](https://github.com/MrDolch/${{ github.event.repository.name }}/blob/main/CHANGELOG.md#${{ steps.version.outputs.releasenumber }})
+          See [Changelog#v${{ steps.version.outputs.release }}](https://github.com/MrDolch/${{ github.event.repository.name }}/blob/main/CHANGELOG.md#${{ steps.version.outputs.releasenumber }}) for more information.
 
           ## Installation
-          The plugin is listed on the [Marketplace](https://plugins.jetbrains.com/plugin/22113).
+          The plugin is listed on the [Marketplace](https://plugins.jetbrains.com/plugin/23827).
           
-          Open the plugin Marketplace in your IDE (``File > Settings > Plugins > Marketplace``), search for the plugin and hit the install button.
+          Open the plugin Marketplace in your IDE (``File > Settings > Plugins > Marketplace``),
+          search for the plugin and hit the install button.
           
           Alternatively you can also download the jar from the marketplace website.
 
@@ -160,6 +161,6 @@ jobs:
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
-        destination_branch: "develop"
+        destination_branch: "main"
         pr_title: "Sync back"
         pr_body: "An automated PR to sync changes back"
