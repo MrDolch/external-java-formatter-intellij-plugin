@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Download
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -11,6 +12,7 @@ plugins {
   id("org.jetbrains.changelog") version "2.0.0"
   id("org.jetbrains.qodana") version "0.1.13"
   id("org.jetbrains.kotlinx.kover") version "0.6.1"
+  id("de.undercouch.download") version "5.6.0"
 }
 
 group = properties("pluginGroup")
@@ -71,6 +73,15 @@ kover.xmlReport {
 tasks {
   wrapper {
     gradleVersion = properties("gradleVersion")
+  }
+
+  register("download-task", Download::class.java) {
+    src("https://github.com/MrDolch/configurable-google-java-format/releases/download/2024.21.1/configurable-google-java-format-2024.21.1-all-deps.jar")
+    dest(File("build/resources/main/lib/configurable-google-java-format-all-deps.jar"))
+  }
+
+  compileJava {
+    dependsOn("download-task")
   }
 
   patchPluginXml {

@@ -97,6 +97,12 @@ jobs:
           
           Alternatively you can also download the jar from the marketplace website.
 
+    - name: Upload Assets
+      uses: shogo82148/actions-upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/distributions/external-java-formatter-intellij-plugin-*.zip
+
   publish:
     runs-on: ubuntu-latest
     needs: [prepare_release]
