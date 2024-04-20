@@ -1,8 +1,8 @@
 # external-java-format-intellij-plugin
 
 ![Build](https://github.com/MrDolch/external-java-format-intellij-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/23827.svg)](https://plugins.jetbrains.com/plugin/23827)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/23827.svg)](https://plugins.jetbrains.com/plugin/23827)
 
 <!-- Plugin description -->
 <p>This plugin enables the integration of any Java formatter into the project.</p>

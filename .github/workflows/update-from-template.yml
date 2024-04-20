@@ -83,7 +83,7 @@ jobs:
       - name: pull-request
         if: steps.main.outputs.abort == 0
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.UPDATE_FROM_TEMPLATE_PAT }}
         run: |
           gh_pr_up() { 
             gh pr create -H "${{ env.UPDATE_BRANCH }}" "$@" || (git checkout "${{ env.UPDATE_BRANCH }}" && gh pr edit "$@")
