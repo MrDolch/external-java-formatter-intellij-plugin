@@ -77,7 +77,7 @@ tasks {
 
   register("download-task", Download::class.java) {
     src("https://github.com/MrDolch/configurable-google-java-format/releases/download/2024.21.1/configurable-google-java-format-2024.21.1-all-deps.jar")
-    dest(File("build/resources/main/lib/configurable-google-java-format-all-deps.jar"))
+    dest(File("src/main/resources/lib/configurable-google-java-format-all-deps.jar"))
   }
 
   compileJava {

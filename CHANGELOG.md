@@ -4,6 +4,11 @@
 
 ## [Unreleased] - 2024-04-05
 
+## [1.0.4] - 2024-04-21
+
+- fix build workflow
+- upgrade included formatter to version 2024.21.1
+
 ## [1.0.1] - 2024-04-05
 
 - implement test-button for preview and verify configuration

@@ -24,7 +24,8 @@ import kotlin.math.max
 internal class ConfigurationPanel(private val project: Project) : BaseConfigurable(), SearchableConfigurable {
   private val panel: JPanel = JPanel()
   private val enabled: JCheckBox = JCheckBox("Enable external-java-formatter")
-  private val useStandardIn: JCheckBox = JCheckBox("Send content to Formatter over Standard-In. Otherwise, use {} in Arguments to mark where filename is inserted.")
+  private val useStandardIn: JCheckBox =
+    JCheckBox("Send content to Formatter over Standard-In. Otherwise, use {} in Arguments to mark where filename is inserted.")
   private val classPath: JTextField = JTextField()
   private val mainClass: JTextField = JTextField()
   private val arguments: JTextField = JTextField()
@@ -86,52 +87,68 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
     testCode.setFont(monospacedFont)
     testButton.addActionListener { formatTestCode() }
 
-    val vmOptionsPane = JScrollPane(vmOptions, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
+    val vmOptionsPane =
+      JScrollPane(vmOptions, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
     vmOptionsPane.preferredSize = Dimension(mainClass.preferredSize.width, 150)
-    val testCodePane = JScrollPane(testCode, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
+    val testCodePane =
+      JScrollPane(testCode, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
     testCodePane.preferredSize = Dimension(mainClass.preferredSize.width, 200)
     workingDir.preferredSize = Dimension(mainClass.preferredSize.width, workingDir.preferredSize.height)
 
     panel.layout = GridLayoutManager(10, 2, JBUI.emptyInsets(), -1, -1)
     var currentRow = 0;
-    panel.add(enabled, GridConstraints(
+    panel.add(
+      enabled, GridConstraints(
         currentRow, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
         GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
-        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false
+      )
+    )
     panel.add(JLabel("Class Path"), left(++currentRow)); panel.add(classPath, right(currentRow))
     panel.add(JLabel("Main Class"), left(++currentRow)); panel.add(mainClass, right(currentRow))
-    panel.add(useStandardIn, GridConstraints(
+    panel.add(
+      useStandardIn, GridConstraints(
         ++currentRow, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
         GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
-        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+        GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false
+      )
+    )
     panel.add(JLabel("Arguments"), left(++currentRow)); panel.add(arguments, right(currentRow))
     panel.add(JLabel("Working Dir"), left(++currentRow)); panel.add(workingDir, right(currentRow))
     panel.add(JLabel("VM-Options"), left(++currentRow)); panel.add(vmOptionsPane, right(currentRow, Dimension(50, 50)))
     panel.add(JLabel("Test-Code"), left(++currentRow)); panel.add(testCodePane, right(currentRow, Dimension(50, 50)))
     panel.add(testButton, left(++currentRow)); panel.add(JLabel(""), right(currentRow))
-    panel.add(Spacer(), GridConstraints(
+    panel.add(
+      Spacer(), GridConstraints(
         ++currentRow, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL,
-        1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false))
+        1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false
+      )
+    )
     return panel
   }
 
   private fun formatTestCode() {
     if (!enabled.isSelected) {
-      JOptionPane.showMessageDialog(testButton, "Formatter must be enabled via the checkbox.",
-          "Formatting could not be started", JOptionPane.ERROR_MESSAGE)
+      JOptionPane.showMessageDialog(
+        testButton, "Formatter must be enabled via the checkbox.",
+        "Formatting could not be started", JOptionPane.ERROR_MESSAGE
+      )
       return
     }
     val projectSdk: Sdk? = ProjectRootManager.getInstance(project).projectSdk
     if (projectSdk == null) {
-      JOptionPane.showMessageDialog(testButton, "A project SDK must be selected under Project settings.",
-          "Formatting could not be started", JOptionPane.ERROR_MESSAGE)
+      JOptionPane.showMessageDialog(
+        testButton, "A project SDK must be selected under Project settings.",
+        "Formatting could not be started", JOptionPane.ERROR_MESSAGE
+      )
       return
     }
     val tempFile = File.createTempFile("external-java-format-test", ".java")
     tempFile.deleteOnExit()
     tempFile.writeText(testCode.text)
     val commandLine = FormattingRequestExecutor.createCommandLine(
-        tempFile, projectSdk, workingDir.text, mainClass.text, classPath.text, arguments.text, vmOptions.text)
+      tempFile, projectSdk, workingDir.text, mainClass.text, classPath.text, arguments.text, vmOptions.text
+    )
 
 
     val (exitCode, stdOut, stdErr) = execute(commandLine, testCode.text)
@@ -141,8 +158,16 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
       testCode.text = stdOut
       testCode.caretPosition = max(firstDiffPos, 0)
       testCode.requestFocus()
-      JOptionPane.showMessageDialog(testButton, stdErr.ifBlank { "Ok" }, "Formatting was successfully completed", JOptionPane.INFORMATION_MESSAGE)
-    } else JOptionPane.showMessageDialog(testButton, stdErr.ifBlank { "Error $exitCode" }, "Formatting was terminated with an error $exitCode", JOptionPane.ERROR_MESSAGE)
+      JOptionPane.showMessageDialog(
+        testButton,
+        stdErr.ifBlank { "Ok - Using SDK ${projectSdk.name}/${projectSdk.versionString}" },
+        "Formatting was successfully completed", JOptionPane.INFORMATION_MESSAGE
+      )
+    } else JOptionPane.showMessageDialog(
+      testButton,
+      stdErr.ifBlank { "Error $exitCode - Using SDK ${projectSdk.name}/${projectSdk.versionString}" },
+      "Formatting was terminated with an error $exitCode", JOptionPane.ERROR_MESSAGE
+    )
   }
 
   private fun execute(commandLine: GeneralCommandLine, stdIn: String? = null): Triple<Int, String, String> {
@@ -176,13 +201,13 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
   }
 
   private fun left(row: Int) = GridConstraints(
-      row, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
-      GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false
+    row, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
+    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false
   )
 
   private fun right(row: Int, minimumSize: Dimension? = null) = GridConstraints(
-      row, 1, 1, 1,
-      GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW,
-      GridConstraints.SIZEPOLICY_CAN_GROW, minimumSize, null, null, 0, false
+    row, 1, 1, 1,
+    GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW,
+    GridConstraints.SIZEPOLICY_CAN_GROW, minimumSize, null, null, 0, false
   )
 }
