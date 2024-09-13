@@ -2,7 +2,11 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased] - 2024-04-05
+## [Unreleased] - 2024-09-13
+
+## [1.0.6] - 2024-09-13
+
+- upgrade idea
 
 ## [1.0.4] - 2024-04-21
 
