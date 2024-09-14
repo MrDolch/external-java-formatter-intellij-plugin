@@ -13,6 +13,7 @@ plugins {
   id("org.jetbrains.qodana") version "0.1.13"
   id("org.jetbrains.kotlinx.kover") version "0.6.1"
   id("de.undercouch.download") version "5.6.0"
+  id("org.sonarqube") version "5.1.0.4882"
 }
 
 group = properties("pluginGroup")
