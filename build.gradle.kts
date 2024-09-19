@@ -157,3 +157,10 @@ intellijPlatformTesting {
     }
   }
 }
+
+sonarqube {
+  properties {
+    property("sonar.projectKey", "_external-java-formatter-intellij-plugin")
+    property("sonar.branch.name", "main") // Setze hier den Branch-Namen
+  }
+}
