@@ -4,9 +4,9 @@
 
 ## [Unreleased] - 2024-09-13
 
-## [1.0.6] - 2024-09-13
+## [1.0.6] - 2024-09-19
 
-- upgrade idea
+- upgrade Idea and Gradle
 
 ## [1.0.4] - 2024-04-21
 
