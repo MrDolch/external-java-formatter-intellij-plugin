@@ -3,6 +3,7 @@
 ![Build](https://github.com/MrDolch/external-java-format-intellij-plugin/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/23827.svg)](https://plugins.jetbrains.com/plugin/23827)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/23827.svg)](https://plugins.jetbrains.com/plugin/23827)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MrDolch_external-java-formatter-intellij-plugin&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=MrDolch_external-java-formatter-intellij-plugin)
 
 <!-- Plugin description -->
 <p>This plugin enables the integration of any Java formatter into the project.</p>
