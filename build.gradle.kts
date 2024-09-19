@@ -9,6 +9,7 @@ plugins {
   alias(libs.plugins.changelog) // Gradle Changelog Plugin
   alias(libs.plugins.qodana) // Gradle Qodana Plugin
   alias(libs.plugins.kover) // Gradle Kover Plugin
+  id("org.sonarqube") version "5.1.0.4882"
 }
 
 group = providers.gradleProperty("pluginGroup").get()
