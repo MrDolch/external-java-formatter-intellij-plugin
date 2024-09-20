@@ -21,7 +21,7 @@ import java.util.*
 internal const val notificationGroup: String = "external google-java-formatter"
 internal const val name: String = "external google-java-formatter"
 internal const val timeoutInSeconds = 10
-internal val timeoutMessage = CodeStyleBundle.message("async.formatting.service.timeout", name, timeoutInSeconds)
+internal const val timeoutMessage = "$name: timeout of $timeoutInSeconds reached."
 internal val application = ApplicationManager.getApplication()
 internal val fileDocumentManager = FileDocumentManager.getInstance()
 internal val commandProcessor = CommandProcessor.getInstance()
