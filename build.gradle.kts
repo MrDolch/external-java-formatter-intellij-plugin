@@ -10,6 +10,7 @@ plugins {
   alias(libs.plugins.qodana) // Gradle Qodana Plugin
   alias(libs.plugins.kover) // Gradle Kover Plugin
   id("org.sonarqube") version "5.1.0.4882"
+  id("checkstyle")
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -17,7 +18,7 @@ version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
-  jvmToolchain(17)
+  jvmToolchain(21)
 }
 
 // Configure project's dependencies
