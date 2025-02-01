@@ -2,7 +2,10 @@
 
 # external-java-format-intellij-plugin Changelog
 
-## [Unreleased] - 2024-09-13
+## [1.0.9] - 2025-02-01
+
+- upgrade Idea
+- upgrade java-formatter to configurable-google-java-format-2025.21.2-all-deps.jar
 
 ## [1.0.6] - 2024-09-19
 
