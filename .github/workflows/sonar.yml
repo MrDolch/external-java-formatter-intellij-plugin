@@ -55,7 +55,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Build
-        run: ./gradlew build sonarqube --info -Dsonar.projectKey=${{ env.SONARCLOUD_ORG }}_${{ github.event.repository.name }} -Dsonar.organization=${{ env.SONARCLOUD_ORG }} -Dsonar.host.url=${{ env.SONARCLOUD_HOST }}
+        run: ./gradlew build sonar --info -Dsonar.projectKey=${{ env.SONARCLOUD_ORG }}_${{ github.event.repository.name }} -Dsonar.organization=${{ env.SONARCLOUD_ORG }} -Dsonar.host.url=${{ env.SONARCLOUD_HOST }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
