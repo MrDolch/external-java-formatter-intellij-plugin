@@ -10,8 +10,8 @@
 <p>Unlike other formatters, the SDK of the project is used instead of the Intellij VM when the formatter is called.
    This solves the problem where formatters could not format code from a newer SDK.</p>
 <p>The configuration panel allows you to select the main class and specify further parameters.</p>
-<p>The <a href="https://github.com/MrDolch/configurable-google-java-format">configurable-google-java-format</a>
-   formatter with a line length of 120 characters is set as the default setting.</p>
+<p>The <a href="https://github.com/MrDolch/configurable-java-format">configurable-java-format</a> formatter, based on
+   the google-java-format style but with a line length of 120 characters, is set as the default setting.</p>
 <!-- Plugin description end -->
 
 ## Installation
