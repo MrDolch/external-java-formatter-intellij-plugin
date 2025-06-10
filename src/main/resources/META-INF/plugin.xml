@@ -9,9 +9,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <formattingService
                 implementation="com.github.mrdolch.externaljavaformatter.ExternalJavaFormatter"/>
-        <projectService
-                serviceImplementation="com.github.mrdolch.externaljavaformatter.PersistConfigurationService"/>
         <projectConfigurable
+                displayName="External-Java-Formatter Settings"
                 instance="com.github.mrdolch.externaljavaformatter.ConfigurationPanel"/>
     </extensions>
 

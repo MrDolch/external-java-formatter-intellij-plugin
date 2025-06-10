@@ -4,6 +4,10 @@
 
 ## [Unreleased] - 2025-02-01
 
+## [1.0.12] - 2025-06-10
+
+- Fix minor issues in code quality
+
 ## [1.0.11] - 2025-06-10
 
 - upgrade Idea

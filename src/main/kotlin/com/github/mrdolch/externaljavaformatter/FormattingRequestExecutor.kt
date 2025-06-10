@@ -10,7 +10,9 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.formatting.FormattingContext
 import com.intellij.formatting.service.DocumentMerger
 import com.intellij.formatting.service.FormattingNotificationService
+import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.util.io.FileUtilRt
@@ -24,7 +26,7 @@ class FormattingRequestExecutor(private val context: FormattingContext, private 
   private val notifications = FormattingNotificationService.getInstance(context.project)
 
   init {
-    if (configuration.useStandardIn != true) fileDocumentManager.saveDocument(document)
+    if (configuration.useStandardIn != true) FileDocumentManager.getInstance().saveDocument(document)
   }
 
   internal fun executeExternalFormatterProcess() {
@@ -53,7 +55,7 @@ class FormattingRequestExecutor(private val context: FormattingContext, private 
       else -> with(request) {
         val updateDocumentFun = { updateDocument(output.stdout) }
         val asWriteActionFun = { application.runWriteAction(ThrowableComputable(updateDocumentFun)) }
-        val asUndoActionFun = { commandProcessor.runUndoTransparentAction(asWriteActionFun) }
+        val asUndoActionFun = { CommandProcessor.getInstance().runUndoTransparentAction(asWriteActionFun) }
         application.invokeLater(asUndoActionFun)
       }
     }
@@ -69,9 +71,9 @@ class FormattingRequestExecutor(private val context: FormattingContext, private 
 
   private fun updateDocument(newText: String) {
     DocumentMerger.EP_NAME.extensionList.filter { document.modificationStamp > initialDocumentModificationStamp }
-        .find { merger -> merger.updateDocument(document, newText) }
-        ?: let { document.setText(newText) }
-    fileDocumentManager.saveDocument(document)
+      .find { merger -> merger.updateDocument(document, newText) }
+      ?: let { document.setText(newText) }
+    FileDocumentManager.getInstance().saveDocument(document)
   }
 
   companion object {
