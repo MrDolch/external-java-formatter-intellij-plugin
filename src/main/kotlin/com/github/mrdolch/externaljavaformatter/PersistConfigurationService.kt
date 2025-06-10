@@ -2,10 +2,12 @@ package com.github.mrdolch.externaljavaformatter
 
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import java.nio.file.Path
 
+@Service(Service.Level.PROJECT)
 @State(name = "ExternalJavaFormatterSettings", storages = [Storage("external-java-formatter.xml")])
 class PersistConfigurationService : PersistentStateComponent<PersistConfigurationService.Configuration> {
   private var configuration = Configuration()

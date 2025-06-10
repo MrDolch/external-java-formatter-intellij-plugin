@@ -1,14 +1,11 @@
 package com.github.mrdolch.externaljavaformatter
 
 import com.github.mrdolch.externaljavaformatter.PersistConfigurationService.Configuration
-import com.intellij.CodeStyleBundle
 import com.intellij.formatting.FormattingContext
 import com.intellij.formatting.service.AbstractDocumentFormattingService
 import com.intellij.formatting.service.FormattingService
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -23,8 +20,6 @@ internal const val name: String = "external google-java-formatter"
 internal const val timeoutInSeconds = 10
 internal const val timeoutMessage = "$name: timeout of $timeoutInSeconds reached."
 internal val application = ApplicationManager.getApplication()
-internal val fileDocumentManager = FileDocumentManager.getInstance()
-internal val commandProcessor = CommandProcessor.getInstance()
 
 class ExternalJavaFormatter : AbstractDocumentFormattingService() {
   private val pendingRequests = Collections.synchronizedSet(mutableSetOf<Document>())

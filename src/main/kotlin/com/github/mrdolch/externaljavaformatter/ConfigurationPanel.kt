@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.intellij.uiDesigner.core.Spacer
@@ -39,7 +40,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
   }
 
   override fun getDisplayName(): String {
-    return "External-java-formatter Settings"
+    return "External-Java-Formatter Settings"
   }
 
   override fun apply() {
@@ -88,15 +89,15 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
     testButton.addActionListener { formatTestCode() }
 
     val vmOptionsPane =
-      JScrollPane(vmOptions, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
+      JBScrollPane(vmOptions, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
     vmOptionsPane.preferredSize = Dimension(mainClass.preferredSize.width, 150)
     val testCodePane =
-      JScrollPane(testCode, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
+      JBScrollPane(testCode, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
     testCodePane.preferredSize = Dimension(mainClass.preferredSize.width, 200)
     workingDir.preferredSize = Dimension(mainClass.preferredSize.width, workingDir.preferredSize.height)
 
     panel.layout = GridLayoutManager(10, 2, JBUI.emptyInsets(), -1, -1)
-    var currentRow = 0;
+    var currentRow = 0
     panel.add(
       enabled, GridConstraints(
         currentRow, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
@@ -171,9 +172,9 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
   }
 
   private fun execute(commandLine: GeneralCommandLine, stdIn: String? = null): Triple<Int, String, String> {
-    var stdErr = "";
-    var stdOut = "";
-    var exitCode = -1;
+    var stdErr = ""
+    var stdOut = ""
+    var exitCode = -1
 
     ProgressManager.getInstance().runProcessWithProgressSynchronously({
       CapturingProcessHandler(commandLine).also { processHandler ->
@@ -189,7 +190,7 @@ internal class ConfigurationPanel(private val project: Project) : BaseConfigurab
         stdOut = output.stdout
         exitCode = output.exitCode
       }
-    }, "Test formatting ...", true, project)
+    }, "Test Formatting ...", true, project)
     return Triple(exitCode, stdOut, stdErr)
   }
 
